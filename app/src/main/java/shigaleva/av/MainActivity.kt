@@ -1,11 +1,11 @@
 package shigaleva.av
 
+import android.annotation.SuppressLint
 import android.graphics.Color
 import android.os.Bundle
 import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
-import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -20,6 +20,9 @@ class MainActivity : AppCompatActivity() {
     private var firstNumberSave = 0
     private var secondNumberSave = 0
     private var operationSave = ""
+
+    private var visibleBtnStart = true
+    private var visibleBtnCheck = true
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -36,8 +39,10 @@ class MainActivity : AppCompatActivity() {
 
         //нажатие кнопки "старт"
         btnStart.setOnClickListener {
-            it.isEnabled = false
-            btnCheck.isEnabled = true
+            visibleBtnStart = false
+            it.isEnabled = visibleBtnStart
+            visibleBtnCheck = true
+            btnCheck.isEnabled = visibleBtnCheck
             editTxtResult.text.clear()
             editTxtResult.setBackgroundColor(Color.TRANSPARENT)
             backgroundResult = 0
@@ -46,15 +51,17 @@ class MainActivity : AppCompatActivity() {
 
         //нажатие кнопки "проверка"
         btnCheck.setOnClickListener {
-            it.isEnabled = false
-            btnStart.isEnabled = false
+            visibleBtnCheck = false
+            it.isEnabled = visibleBtnCheck
+            visibleBtnStart = true
+            btnStart.isEnabled = visibleBtnStart
             checkResult()
         }
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
-           val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-           v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
-           insets
+            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
+            insets
         }
     }
 
@@ -67,15 +74,15 @@ class MainActivity : AppCompatActivity() {
         val firstNumber = (10..99).random()
         var secondNumber = (10..99).random()
 
-        firstNumberSave = firstNumber
-        secondNumberSave = secondNumber
-
         //Если осуществляется операция деление, то делимое,
         //делитель и частное должны быть целыми числами
         while (firstNumber % secondNumber != 0) secondNumber = (10..99).random()
 
         txtViewFirstNumber.text = "$firstNumber"
         txtViewSecondNumber.text = "$secondNumber"
+
+        firstNumberSave = firstNumber
+        secondNumberSave = secondNumber
 
         when ((0..3).random()) {
             0 -> txtViewOperation.text = "+"
@@ -94,6 +101,7 @@ class MainActivity : AppCompatActivity() {
         val txtViewOperation = findViewById<TextView>(R.id.txtView_operation)
         val editTxtResult = findViewById<EditText>(R.id.editText_result)
         val btnStart = findViewById<Button>(R.id.btn_start)
+        val btnCheck = findViewById<Button>(R.id.btn_check)
 
         val firstNumber = txtViewFirstNumber.text.toString().toInt()
         val secondNumber = txtViewSecondNumber.text.toString().toInt()
@@ -122,10 +130,13 @@ class MainActivity : AppCompatActivity() {
 
         countAnswers++
         updateDataInElement()
-        btnStart.isEnabled = true
+
+        btnStart.isEnabled = visibleBtnStart
+        btnCheck.isEnabled = visibleBtnCheck
     }
 
     //функция обновления данных в элементах активити
+    @SuppressLint("SetTextI18n")
     private fun updateDataInElement() {
         val txtViewCountExample = findViewById<TextView>(R.id.txtView_count_example)
         val txtViewCountRightAnswer = findViewById<TextView>(R.id.txtView_count_right)
@@ -137,6 +148,12 @@ class MainActivity : AppCompatActivity() {
         val txtViewOperation = findViewById<TextView>(R.id.txtView_operation)
 
         val editTxtResult = findViewById<EditText>(R.id.editText_result)
+
+        val btnStart = findViewById<Button>(R.id.btn_start)
+        val btnCheck = findViewById<Button>(R.id.btn_check)
+
+        btnStart.isEnabled = visibleBtnStart
+        btnCheck.isEnabled = visibleBtnCheck
 
         txtViewCountExample.text = "$countAnswers"
         txtViewCountRightAnswer.text = "$countRightAnswers"
@@ -151,7 +168,6 @@ class MainActivity : AppCompatActivity() {
             0 -> editTxtResult.setBackgroundColor(Color.TRANSPARENT)
             2 -> editTxtResult.setBackgroundColor(Color.RED)
             5 -> editTxtResult.setBackgroundColor(Color.GREEN)
-
         }
     }
 
@@ -165,6 +181,8 @@ class MainActivity : AppCompatActivity() {
         instanceState.putInt("secondNumberSave", secondNumberSave)
         instanceState.putString("operationSave", operationSave)
         instanceState.putInt("backgroundResult", backgroundResult)
+        instanceState.putBoolean("visibleBtnStart", visibleBtnStart)
+        instanceState.putBoolean("visibleBtnCheck", visibleBtnCheck)
     }
 
     //использование сохраненных значений переменных
@@ -177,6 +195,8 @@ class MainActivity : AppCompatActivity() {
         secondNumberSave = savedInstanceState.getInt("secondNumberSave")
         operationSave = savedInstanceState.getString("operationSave").toString()
         backgroundResult = savedInstanceState.getInt("backgroundResult")
+        visibleBtnStart = savedInstanceState.getBoolean("visibleBtnStart")
+        visibleBtnCheck = savedInstanceState.getBoolean("visibleBtnCheck")
         updateDataInElement()
     }
 }
